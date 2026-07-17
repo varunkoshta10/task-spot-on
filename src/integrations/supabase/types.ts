@@ -306,6 +306,8 @@ export type Database = {
       worker_profiles: {
         Row: {
           address: string | null
+          approx_latitude: number | null
+          approx_longitude: number | null
           bio: string | null
           category_id: string | null
           created_at: string
@@ -334,6 +336,8 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          approx_latitude?: number | null
+          approx_longitude?: number | null
           bio?: string | null
           category_id?: string | null
           created_at?: string
@@ -362,6 +366,8 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          approx_latitude?: number | null
+          approx_longitude?: number | null
           bio?: string | null
           category_id?: string | null
           created_at?: string
