@@ -84,9 +84,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Skillora — Hire skilled professionals near you" },
       { name: "description", content: "Find, chat with, and book trusted local pros — electricians, tutors, cooks, mechanics and 40+ more — based on live location, ratings and price." },
       { property: "og:title", content: "Skillora — Hire skilled professionals near you" },
-      { property: "og:description", content: "Find, chat with, and book trusted local pros based on live location, ratings and price." },
+      { property: "og:description", content: "Find, chat with, and book trusted local pros — electricians, tutors, cooks, mechanics and 40+ more — based on live location, ratings and price." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Skillora — Hire skilled professionals near you" },
+      { name: "twitter:description", content: "Find, chat with, and book trusted local pros — electricians, tutors, cooks, mechanics and 40+ more — based on live location, ratings and price." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/f5423d01-2dff-4a7b-880d-942f1c7ddbda" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/f5423d01-2dff-4a7b-880d-942f1c7ddbda" },
     ],
     links: [
       {
