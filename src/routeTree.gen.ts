@@ -9,13 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as BecomeAProRouteImport } from './routes/become-a-pro'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkersWorkerIdRouteImport } from './routes/workers.$workerId'
+import { Route as AuthenticatedWorkerOnboardingRouteImport } from './routes/_authenticated/worker-onboarding'
+import { Route as AuthenticatedWorkerDashboardRouteImport } from './routes/_authenticated/worker-dashboard'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
   path: '/how-it-works',
@@ -36,6 +46,10 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -46,6 +60,23 @@ const WorkersWorkerIdRoute = WorkersWorkerIdRouteImport.update({
   path: '/workers/$workerId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedWorkerOnboardingRoute =
+  AuthenticatedWorkerOnboardingRouteImport.update({
+    id: '/worker-onboarding',
+    path: '/worker-onboarding',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedWorkerDashboardRoute =
+  AuthenticatedWorkerDashboardRouteImport.update({
+    id: '/worker-dashboard',
+    path: '/worker-dashboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,6 +84,10 @@ export interface FileRoutesByFullPath {
   '/become-a-pro': typeof BecomeAProRoute
   '/browse': typeof BrowseRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/worker-dashboard': typeof AuthenticatedWorkerDashboardRoute
+  '/worker-onboarding': typeof AuthenticatedWorkerOnboardingRoute
   '/workers/$workerId': typeof WorkersWorkerIdRoute
 }
 export interface FileRoutesByTo {
@@ -61,15 +96,24 @@ export interface FileRoutesByTo {
   '/become-a-pro': typeof BecomeAProRoute
   '/browse': typeof BrowseRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/worker-dashboard': typeof AuthenticatedWorkerDashboardRoute
+  '/worker-onboarding': typeof AuthenticatedWorkerOnboardingRoute
   '/workers/$workerId': typeof WorkersWorkerIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/become-a-pro': typeof BecomeAProRoute
   '/browse': typeof BrowseRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/worker-dashboard': typeof AuthenticatedWorkerDashboardRoute
+  '/_authenticated/worker-onboarding': typeof AuthenticatedWorkerOnboardingRoute
   '/workers/$workerId': typeof WorkersWorkerIdRoute
 }
 export interface FileRouteTypes {
@@ -80,6 +124,10 @@ export interface FileRouteTypes {
     | '/become-a-pro'
     | '/browse'
     | '/how-it-works'
+    | '/sitemap.xml'
+    | '/dashboard'
+    | '/worker-dashboard'
+    | '/worker-onboarding'
     | '/workers/$workerId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -88,28 +136,46 @@ export interface FileRouteTypes {
     | '/become-a-pro'
     | '/browse'
     | '/how-it-works'
+    | '/sitemap.xml'
+    | '/dashboard'
+    | '/worker-dashboard'
+    | '/worker-onboarding'
     | '/workers/$workerId'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/auth'
     | '/become-a-pro'
     | '/browse'
     | '/how-it-works'
+    | '/sitemap.xml'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/worker-dashboard'
+    | '/_authenticated/worker-onboarding'
     | '/workers/$workerId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   BecomeAProRoute: typeof BecomeAProRoute
   BrowseRoute: typeof BrowseRoute
   HowItWorksRoute: typeof HowItWorksRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   WorkersWorkerIdRoute: typeof WorkersWorkerIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/how-it-works': {
       id: '/how-it-works'
       path: '/how-it-works'
@@ -138,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -152,15 +225,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkersWorkerIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/worker-onboarding': {
+      id: '/_authenticated/worker-onboarding'
+      path: '/worker-onboarding'
+      fullPath: '/worker-onboarding'
+      preLoaderRoute: typeof AuthenticatedWorkerOnboardingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/worker-dashboard': {
+      id: '/_authenticated/worker-dashboard'
+      path: '/worker-dashboard'
+      fullPath: '/worker-dashboard'
+      preLoaderRoute: typeof AuthenticatedWorkerDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedWorkerDashboardRoute: typeof AuthenticatedWorkerDashboardRoute
+  AuthenticatedWorkerOnboardingRoute: typeof AuthenticatedWorkerOnboardingRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedWorkerDashboardRoute: AuthenticatedWorkerDashboardRoute,
+  AuthenticatedWorkerOnboardingRoute: AuthenticatedWorkerOnboardingRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   BecomeAProRoute: BecomeAProRoute,
   BrowseRoute: BrowseRoute,
   HowItWorksRoute: HowItWorksRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   WorkersWorkerIdRoute: WorkersWorkerIdRoute,
 }
 export const routeTree = rootRouteImport
