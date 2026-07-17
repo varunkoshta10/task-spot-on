@@ -36,7 +36,7 @@ async function fetchBrowseData() {
     supabase.from("categories").select("id, name, slug, icon").order("sort_order"),
     supabase
       .from("worker_profiles")
-      .select("id, user_id, headline, hourly_rate, minimum_charge, experience_years, rating_avg, rating_count, jobs_completed, is_verified, emergency_available, address, latitude, longitude, category:categories(id, name, slug, icon), profile:profiles(full_name, avatar_url, city)")
+      .select("id, user_id, headline, hourly_rate, minimum_charge, experience_years, rating_avg, rating_count, jobs_completed, is_verified, emergency_available, latitude:approx_latitude, longitude:approx_longitude, category:categories(id, name, slug, icon), profile:profiles(full_name, avatar_url, city)")
       .eq("status", "approved"),
   ]);
   return { categories: cats.data ?? [], workers: (workers.data ?? []) as unknown as (WorkerCardData & { latitude: number | null; longitude: number | null; category: any })[] };

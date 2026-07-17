@@ -25,7 +25,7 @@ async function fetchHomeData() {
     supabase.from("categories").select("id, name, slug, icon, category_group, emergency_capable, sort_order").order("sort_order"),
     supabase
       .from("worker_profiles")
-      .select("id, user_id, headline, hourly_rate, minimum_charge, experience_years, rating_avg, rating_count, jobs_completed, is_verified, emergency_available, address, latitude, longitude, category:categories(name, icon), profile:profiles(full_name, avatar_url, city)")
+      .select("id, user_id, headline, hourly_rate, minimum_charge, experience_years, rating_avg, rating_count, jobs_completed, is_verified, emergency_available, latitude:approx_latitude, longitude:approx_longitude, category:categories(name, icon), profile:profiles(full_name, avatar_url, city)")
       .eq("status", "approved")
       .order("rating_avg", { ascending: false })
       .limit(8),
