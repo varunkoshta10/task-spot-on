@@ -17,9 +17,13 @@ async function fetchWorker(id: string) {
   const { data, error } = await supabase
     .from("worker_profiles")
     .select(`
-      *,
+      id, user_id, category_id, headline, bio, experience_years, hourly_rate,
+      minimum_charge, negotiable, service_radius_km, languages, skills,
+      emergency_available, is_online, is_verified, status, rating_avg,
+      rating_count, jobs_completed, response_minutes,
+      latitude:approx_latitude, longitude:approx_longitude, created_at,
       category:categories(id, name, slug, icon, category_group),
-      profile:profiles(full_name, avatar_url, city, phone),
+      profile:profiles(full_name, avatar_url, city),
       gallery:worker_gallery(id, image_url, caption),
       reviews(id, rating, comment, created_at, quality, punctuality, behaviour, value, customer:profiles!reviews_customer_id_fkey(full_name, avatar_url))
     `)
