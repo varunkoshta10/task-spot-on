@@ -9,38 +9,135 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as BrowseRouteImport } from './routes/browse'
+import { Route as BecomeAProRouteImport } from './routes/become-a-pro'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WorkersWorkerIdRouteImport } from './routes/workers.$workerId'
 
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrowseRoute = BrowseRouteImport.update({
+  id: '/browse',
+  path: '/browse',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BecomeAProRoute = BecomeAProRouteImport.update({
+  id: '/become-a-pro',
+  path: '/become-a-pro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkersWorkerIdRoute = WorkersWorkerIdRouteImport.update({
+  id: '/workers/$workerId',
+  path: '/workers/$workerId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/become-a-pro': typeof BecomeAProRoute
+  '/browse': typeof BrowseRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/workers/$workerId': typeof WorkersWorkerIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/become-a-pro': typeof BecomeAProRoute
+  '/browse': typeof BrowseRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/workers/$workerId': typeof WorkersWorkerIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/become-a-pro': typeof BecomeAProRoute
+  '/browse': typeof BrowseRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/workers/$workerId': typeof WorkersWorkerIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/become-a-pro'
+    | '/browse'
+    | '/how-it-works'
+    | '/workers/$workerId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/become-a-pro'
+    | '/browse'
+    | '/how-it-works'
+    | '/workers/$workerId'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/become-a-pro'
+    | '/browse'
+    | '/how-it-works'
+    | '/workers/$workerId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
+  BecomeAProRoute: typeof BecomeAProRoute
+  BrowseRoute: typeof BrowseRoute
+  HowItWorksRoute: typeof HowItWorksRoute
+  WorkersWorkerIdRoute: typeof WorkersWorkerIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/browse': {
+      id: '/browse'
+      path: '/browse'
+      fullPath: '/browse'
+      preLoaderRoute: typeof BrowseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/become-a-pro': {
+      id: '/become-a-pro'
+      path: '/become-a-pro'
+      fullPath: '/become-a-pro'
+      preLoaderRoute: typeof BecomeAProRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +145,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/workers/$workerId': {
+      id: '/workers/$workerId'
+      path: '/workers/$workerId'
+      fullPath: '/workers/$workerId'
+      preLoaderRoute: typeof WorkersWorkerIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
+  BecomeAProRoute: BecomeAProRoute,
+  BrowseRoute: BrowseRoute,
+  HowItWorksRoute: HowItWorksRoute,
+  WorkersWorkerIdRoute: WorkersWorkerIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

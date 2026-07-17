@@ -15,6 +15,8 @@ export type WorkerCardData = {
   is_verified: boolean;
   emergency_available: boolean;
   address: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   distance_km?: number | null;
   profile: { full_name: string | null; avatar_url: string | null; city: string | null } | null;
   category: { name: string; icon: string | null } | null;
