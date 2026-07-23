@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { z } from "zod";
+import { ImageUpload } from "@/components/ImageUpload";
+import { Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/worker-onboarding")({
   component: Onboarding,
@@ -34,6 +36,7 @@ const schema = z.object({
 function Onboarding() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const qc = useQueryClient();
 
   const cats = useQuery({
     queryKey: ["all-categories"],
@@ -43,7 +46,7 @@ function Onboarding() {
   const existing = useQuery({
     queryKey: ["my-worker-profile", user?.id],
     enabled: !!user,
-    queryFn: async () => (await supabase.from("worker_profiles").select("*, profile:profiles(full_name, phone)").eq("user_id", user!.id).maybeSingle()).data,
+    queryFn: async () => (await supabase.from("worker_profiles").select("*, profile:profiles(full_name, phone, avatar_url)").eq("user_id", user!.id).maybeSingle()).data,
   });
 
   const [f, setF] = useState({
@@ -59,6 +62,7 @@ function Onboarding() {
     address: "",
     phone: "",
     full_name: "",
+    avatar_url: "",
     negotiable: true,
     emergency_available: false,
   });
@@ -79,6 +83,7 @@ function Onboarding() {
         address: e.address ?? "",
         phone: e.profile?.phone ?? "",
         full_name: e.profile?.full_name ?? "",
+        avatar_url: e.profile?.avatar_url ?? "",
         negotiable: e.negotiable ?? true,
         emergency_available: e.emergency_available ?? false,
       });
@@ -91,7 +96,7 @@ function Onboarding() {
       if (!r.success) throw new Error(r.error.issues[0]!.message);
       const v = r.data;
       // update profile
-      await supabase.from("profiles").upsert({ id: user!.id, full_name: v.full_name, phone: v.phone || null });
+      await supabase.from("profiles").upsert({ id: user!.id, full_name: v.full_name, phone: v.phone || null, avatar_url: f.avatar_url || null });
 
       // upsert worker profile
       const payload = {
@@ -123,6 +128,30 @@ function Onboarding() {
     onError: (e: any) => toast.error(e.message ?? "Could not save"),
   });
 
+  // Gallery
+  const workerId = (existing.data as any)?.id as string | undefined;
+  const gallery = useQuery({
+    queryKey: ["my-gallery", workerId],
+    enabled: !!workerId,
+    queryFn: async () => (await supabase.from("worker_gallery").select("*").eq("worker_id", workerId!).order("created_at", { ascending: false })).data ?? [],
+  });
+  const addGallery = useMutation({
+    mutationFn: async (url: string) => {
+      const { error } = await supabase.from("worker_gallery").insert({ worker_id: workerId!, image_url: url });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["my-gallery", workerId] }),
+    onError: (e: any) => toast.error(e.message),
+  });
+  const removeGallery = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("worker_gallery").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["my-gallery", workerId] }),
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const grouped: Record<string, typeof cats.data> = {};
   for (const c of cats.data ?? []) (grouped[c.category_group] ??= []).push(c);
 
@@ -132,6 +161,20 @@ function Onboarding() {
       <p className="mt-2 text-muted-foreground">A great profile gets 3× more bookings. Take 2 minutes to fill it in.</p>
 
       <form onSubmit={(e) => { e.preventDefault(); save.mutate(); }} className="mt-8 space-y-6 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+        <Field label="Profile photo" hint="A friendly face gets 5× more bookings.">
+          {user && (
+            <ImageUpload
+              bucket="avatars"
+              userId={user.id}
+              value={f.avatar_url || null}
+              onUploaded={(url) => setF({ ...f, avatar_url: url })}
+              onRemove={() => setF({ ...f, avatar_url: "" })}
+              shape="circle"
+              label="Add photo"
+            />
+          )}
+        </Field>
+
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Full name">
             <Input value={f.full_name} onChange={(e) => setF({ ...f, full_name: e.target.value })} required />
@@ -210,6 +253,42 @@ function Onboarding() {
           {save.isPending ? "Saving…" : existing.data ? "Update my profile" : "Go live on Skillora"}
         </Button>
       </form>
+
+      {workerId && (
+        <section className="mt-10 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+          <h2 className="text-xl font-display font-bold">Portfolio</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Show your best work. Photos help customers trust and book you faster.</p>
+          <div className="mt-4">
+            {user && (
+              <ImageUpload
+                bucket="worker-gallery"
+                userId={user.id}
+                value={null}
+                onUploaded={(url) => addGallery.mutate(url)}
+                label="Add photo"
+                shape="square"
+              />
+            )}
+          </div>
+          {gallery.data && gallery.data.length > 0 && (
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {gallery.data.map((g: any) => (
+                <div key={g.id} className="relative">
+                  <img src={g.image_url} alt="" className="aspect-square w-full rounded-2xl border border-border object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeGallery.mutate(g.id)}
+                    className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-background/90 text-destructive shadow"
+                    aria-label="Remove photo"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }
