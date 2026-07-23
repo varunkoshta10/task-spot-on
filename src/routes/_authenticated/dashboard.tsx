@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Calendar, MapPin, Heart, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WorkerCard } from "@/components/WorkerCard";
+import { ImageUpload } from "@/components/ImageUpload";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -21,6 +23,25 @@ const statusStyle: Record<string, string> = {
 
 function Dashboard() {
   const { user } = useAuth();
+  const qc = useQueryClient();
+
+  const profile = useQuery({
+    queryKey: ["my-profile", user?.id],
+    enabled: !!user,
+    queryFn: async () => (await supabase.from("profiles").select("id, full_name, avatar_url").eq("id", user!.id).maybeSingle()).data,
+  });
+
+  const saveAvatar = useMutation({
+    mutationFn: async (url: string | null) => {
+      const { error } = await supabase.from("profiles").upsert({ id: user!.id, avatar_url: url });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Photo updated");
+      qc.invalidateQueries({ queryKey: ["my-profile", user?.id] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
 
   const bookings = useQuery({
     queryKey: ["my-bookings", user?.id],
@@ -49,6 +70,25 @@ function Dashboard() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
+      {user && (
+        <div className="mb-8 flex flex-col gap-3 rounded-3xl border border-border bg-card p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="text-xs uppercase tracking-widest text-primary">Your profile</div>
+            <h2 className="mt-1 text-lg font-display font-semibold">{profile.data?.full_name ?? "Welcome"}</h2>
+            <p className="text-xs text-muted-foreground">Add a photo so pros know who they're chatting with.</p>
+          </div>
+          <ImageUpload
+            bucket="avatars"
+            userId={user.id}
+            value={profile.data?.avatar_url ?? null}
+            onUploaded={(url) => saveAvatar.mutate(url)}
+            onRemove={() => saveAvatar.mutate(null)}
+            shape="circle"
+            label="Add photo"
+          />
+        </div>
+      )}
+
       <div className="flex items-baseline justify-between">
         <h1 className="text-3xl font-display font-bold tracking-tight">Your bookings</h1>
         <Button asChild variant="outline" className="rounded-full">
