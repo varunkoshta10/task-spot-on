@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as BecomeAProRouteImport } from './routes/become-a-pro'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -26,9 +28,19 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
   path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BrowseRoute = BrowseRouteImport.update({
@@ -83,7 +95,9 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/become-a-pro': typeof BecomeAProRoute
   '/browse': typeof BrowseRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/worker-dashboard': typeof AuthenticatedWorkerDashboardRoute
@@ -95,7 +109,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/become-a-pro': typeof BecomeAProRoute
   '/browse': typeof BrowseRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/worker-dashboard': typeof AuthenticatedWorkerDashboardRoute
@@ -109,7 +125,9 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/become-a-pro': typeof BecomeAProRoute
   '/browse': typeof BrowseRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/worker-dashboard': typeof AuthenticatedWorkerDashboardRoute
@@ -123,7 +141,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/become-a-pro'
     | '/browse'
+    | '/forgot-password'
     | '/how-it-works'
+    | '/reset-password'
     | '/sitemap.xml'
     | '/dashboard'
     | '/worker-dashboard'
@@ -135,7 +155,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/become-a-pro'
     | '/browse'
+    | '/forgot-password'
     | '/how-it-works'
+    | '/reset-password'
     | '/sitemap.xml'
     | '/dashboard'
     | '/worker-dashboard'
@@ -148,7 +170,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/become-a-pro'
     | '/browse'
+    | '/forgot-password'
     | '/how-it-works'
+    | '/reset-password'
     | '/sitemap.xml'
     | '/_authenticated/dashboard'
     | '/_authenticated/worker-dashboard'
@@ -162,7 +186,9 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BecomeAProRoute: typeof BecomeAProRoute
   BrowseRoute: typeof BrowseRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   HowItWorksRoute: typeof HowItWorksRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   WorkersWorkerIdRoute: typeof WorkersWorkerIdRoute
 }
@@ -176,11 +202,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/how-it-works': {
       id: '/how-it-works'
       path: '/how-it-works'
       fullPath: '/how-it-works'
       preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/browse': {
@@ -270,20 +310,12 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BecomeAProRoute: BecomeAProRoute,
   BrowseRoute: BrowseRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   HowItWorksRoute: HowItWorksRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   WorkersWorkerIdRoute: WorkersWorkerIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

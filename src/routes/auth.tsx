@@ -115,6 +115,13 @@ function Auth() {
               <Label htmlFor="pw">Password</Label>
               <Input id="pw" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" />
             </div>
+            {mode === "signin" && (
+              <div className="text-right">
+                <Link to="/forgot-password" className="text-xs font-medium text-primary hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
+            )}
             <Button type="submit" disabled={loading} size="lg" className="w-full rounded-full">
               {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
             </Button>
