@@ -151,6 +151,88 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          body: string | null
+          booking_id: string
+          created_at: string
+          id: string
+          image_url: string | null
+          read_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          body?: string | null
+          booking_id: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          read_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          body?: string | null
+          booking_id?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          read_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          booking_id: string | null
+          created_at: string
+          id: string
+          link: string | null
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -198,6 +280,7 @@ export type Database = {
           created_at: string
           customer_id: string
           id: string
+          photos: string[]
           punctuality: number | null
           quality: number | null
           rating: number
@@ -211,6 +294,7 @@ export type Database = {
           created_at?: string
           customer_id: string
           id?: string
+          photos?: string[]
           punctuality?: number | null
           quality?: number | null
           rating: number
@@ -224,6 +308,7 @@ export type Database = {
           created_at?: string
           customer_id?: string
           id?: string
+          photos?: string[]
           punctuality?: number | null
           quality?: number | null
           rating?: number
@@ -298,6 +383,41 @@ export type Database = {
             foreignKeyName: "worker_gallery_worker_id_fkey"
             columns: ["worker_id"]
             isOneToOne: false
+            referencedRelation: "worker_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      worker_locations: {
+        Row: {
+          accuracy: number | null
+          heading: number | null
+          latitude: number
+          longitude: number
+          updated_at: string
+          worker_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          heading?: number | null
+          latitude: number
+          longitude: number
+          updated_at?: string
+          worker_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          heading?: number | null
+          latitude?: number
+          longitude?: number
+          updated_at?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worker_locations_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: true
             referencedRelation: "worker_profiles"
             referencedColumns: ["id"]
           },
@@ -414,6 +534,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_booking_participant: {
+        Args: { _booking_id: string; _user_id: string }
         Returns: boolean
       }
     }
