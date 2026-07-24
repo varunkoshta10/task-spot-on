@@ -201,6 +201,13 @@ function JobRow({ b, children }: { b: any; children?: React.ReactNode }) {
         </div>
       </div>
       {children && <div className="flex gap-2">{children}</div>}
+      <Link
+        to="/bookings/$bookingId"
+        params={{ bookingId: b.id }}
+        className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs font-medium hover:bg-secondary"
+      >
+        <MessageSquare className="h-3.5 w-3.5" /> Open
+      </Link>
     </div>
   );
 }
