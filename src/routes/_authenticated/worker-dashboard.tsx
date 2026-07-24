@@ -1,10 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Calendar, MapPin, Star, IndianRupee, CheckCircle2, XCircle, PlayCircle, Flag } from "lucide-react";
+import { Calendar, MapPin, Star, IndianRupee, CheckCircle2, PlayCircle, Flag, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/worker-dashboard")({
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/_authenticated/worker-dashboard")({
 function WorkerDashboard() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   const wp = useQuery({
     queryKey: ["my-worker-profile", user?.id],
@@ -38,6 +40,28 @@ function WorkerDashboard() {
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["my-worker-profile"] }),
   });
+
+  // Push live GPS while online
+  useEffect(() => {
+    if (!wp.data?.id || !wp.data.is_online) return;
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    const workerId = wp.data.id;
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        supabase.from("worker_locations").upsert({
+          worker_id: workerId,
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          heading: pos.coords.heading ?? null,
+          accuracy: pos.coords.accuracy ?? null,
+          updated_at: new Date().toISOString(),
+        }).then(() => {});
+      },
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 30_000, timeout: 20_000 },
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [wp.data?.id, wp.data?.is_online]);
 
   const setStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
@@ -177,6 +201,13 @@ function JobRow({ b, children }: { b: any; children?: React.ReactNode }) {
         </div>
       </div>
       {children && <div className="flex gap-2">{children}</div>}
+      <Link
+        to="/bookings/$bookingId"
+        params={{ bookingId: b.id }}
+        className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs font-medium hover:bg-secondary"
+      >
+        <MessageSquare className="h-3.5 w-3.5" /> Open
+      </Link>
     </div>
   );
 }

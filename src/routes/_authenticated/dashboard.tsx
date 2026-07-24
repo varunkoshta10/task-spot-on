@@ -109,8 +109,8 @@ function Dashboard() {
         {bookings.data?.map((b: any) => (
           <Link
             key={b.id}
-            to="/workers/$workerId"
-            params={{ workerId: b.worker?.id }}
+            to="/bookings/$bookingId"
+            params={{ bookingId: b.id }}
             className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/40"
           >
             {b.worker?.profile?.avatar_url ? (
