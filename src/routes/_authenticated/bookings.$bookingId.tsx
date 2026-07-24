@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/ImageUpload";
 import { StarRating } from "@/components/StarRating";
-import { ArrowLeft, Send, MapPin, Image as ImageIcon, Calendar, IndianRupee } from "lucide-react";
+import { ArrowLeft, Send, MapPin, Calendar, IndianRupee } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/bookings/$bookingId")({
@@ -240,8 +240,7 @@ function BookingDetail() {
               value={null}
               onUploaded={(url) => send.mutate({ image_url: url })}
               shape="square"
-              label={<ImageIcon className="h-4 w-4" />}
-              compact
+              label="Photo"
             />
           )}
           <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="Type a message…" className="flex-1" />
