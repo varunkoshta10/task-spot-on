@@ -11,6 +11,15 @@ export function hashCode(userId: string, phone: string, code: string): string {
   return createHash("sha256").update(`${userId}:${phone}:${code}:${pepper}`).digest("hex");
 }
 
+export function hashLoginCode(phone: string, code: string): string {
+  const pepper = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+  return createHash("sha256").update(`login:${phone}:${code}:${pepper}`).digest("hex");
+}
+
+export function phoneToEmail(phone: string): string {
+  return `${phone.replace(/\D/g, "")}@phone.skillora.app`;
+}
+
 export async function sendSms(
   to: string,
   body: string,

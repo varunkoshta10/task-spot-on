@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { sendLoginOtp, verifyLoginOtp } from "@/lib/phone-login.functions";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -25,11 +26,53 @@ const passwordSchema = z.string().min(6, { message: "At least 6 characters" }).m
 
 function Auth() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "phone">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Phone sign-in state
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [needsName, setNeedsName] = useState(false);
+  const [phoneName, setPhoneName] = useState("");
+
+  async function sendCode() {
+    setLoading(true);
+    try {
+      const r = await sendLoginOtp({ data: { phone: phone.trim() } });
+      if (!r.ok) return toast.error(r.error);
+      setOtpSent(true);
+      toast.success("Code sent — check your messages.");
+    } catch (err: any) {
+      toast.error(err?.message ?? "Could not send the code");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function verifyCode() {
+    setLoading(true);
+    try {
+      const r = await verifyLoginOtp({
+        data: { phone: phone.trim(), code: otp.trim(), fullName: needsName ? phoneName.trim() : undefined },
+      });
+      if (!r.ok) {
+        if ("needsName" in r && r.needsName) setNeedsName(true);
+        return toast.error(r.error);
+      }
+      const { error } = await supabase.auth.verifyOtp({ token_hash: r.tokenHash, type: "email" });
+      if (error) throw error;
+      toast.success(r.isNewUser ? "Welcome to Skillora!" : "Welcome back!");
+      navigate({ to: "/dashboard" });
+    } catch (err: any) {
+      toast.error(err?.message ?? "Could not verify the code");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -89,9 +132,86 @@ function Auth() {
 
         <div className="rounded-3xl border border-border bg-card p-8 shadow-[var(--shadow-elevated)]">
           <div className="mb-6 flex gap-2 rounded-full bg-secondary p-1">
-            <button onClick={() => setMode("signin")} className={`flex-1 rounded-full px-4 py-2 text-sm font-medium transition ${mode === "signin" ? "bg-background shadow" : "text-muted-foreground"}`}>Sign in</button>
-            <button onClick={() => setMode("signup")} className={`flex-1 rounded-full px-4 py-2 text-sm font-medium transition ${mode === "signup" ? "bg-background shadow" : "text-muted-foreground"}`}>Create account</button>
+            <button onClick={() => setMode("signin")} className={`flex-1 rounded-full px-3 py-2 text-sm font-medium transition ${mode === "signin" ? "bg-background shadow" : "text-muted-foreground"}`}>Sign in</button>
+            <button onClick={() => setMode("signup")} className={`flex-1 rounded-full px-3 py-2 text-sm font-medium transition ${mode === "signup" ? "bg-background shadow" : "text-muted-foreground"}`}>Create account</button>
+            <button onClick={() => setMode("phone")} className={`flex-1 rounded-full px-3 py-2 text-sm font-medium transition ${mode === "phone" ? "bg-background shadow" : "text-muted-foreground"}`}>Phone</button>
           </div>
+
+          {mode === "phone" ? (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="loginPhone">Mobile number</Label>
+                <Input
+                  id="loginPhone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+919876543210"
+                  disabled={otpSent}
+                />
+                <p className="mt-1 text-xs text-muted-foreground">Include your country code.</p>
+              </div>
+
+              {otpSent && (
+                <div>
+                  <Label htmlFor="loginOtp">Verification code</Label>
+                  <Input
+                    id="loginOtp"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                    placeholder="123456"
+                  />
+                </div>
+              )}
+
+              {needsName && (
+                <div>
+                  <Label htmlFor="phoneName">Your name</Label>
+                  <Input
+                    id="phoneName"
+                    value={phoneName}
+                    onChange={(e) => setPhoneName(e.target.value)}
+                    placeholder="Your name"
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">New here — we just need a name for your account.</p>
+                </div>
+              )}
+
+              {otpSent ? (
+                <div className="space-y-2">
+                  <Button
+                    className="w-full rounded-full"
+                    size="lg"
+                    disabled={loading || otp.length !== 6 || (needsName && phoneName.trim().length < 2)}
+                    onClick={verifyCode}
+                  >
+                    {loading ? "Please wait…" : needsName ? "Create account" : "Sign in"}
+                  </Button>
+                  <Button variant="ghost" className="w-full rounded-full" disabled={loading} onClick={sendCode}>
+                    Resend code
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full rounded-full"
+                    onClick={() => { setOtpSent(false); setOtp(""); setNeedsName(false); }}
+                  >
+                    Change number
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  className="w-full rounded-full"
+                  size="lg"
+                  disabled={loading || phone.trim().length < 8}
+                  onClick={sendCode}
+                >
+                  {loading ? "Sending…" : "Send code"}
+                </Button>
+              )}
+            </div>
+          ) : (
+          <>
 
           <Button type="button" onClick={withGoogle} variant="outline" className="w-full rounded-full">
             <GoogleIcon /> Continue with Google
@@ -126,6 +246,8 @@ function Auth() {
               {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
             </Button>
           </form>
+          </>
+          )}
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
             By continuing you agree to Skillora's terms and privacy policy.
