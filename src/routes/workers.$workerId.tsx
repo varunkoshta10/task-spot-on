@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { useSuspenseQuery, useMutation } from "@tanstack/react-query";
+import { useSuspenseQuery, useMutation, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StarRating } from "@/components/StarRating";
 import { Button } from "@/components/ui/button";
@@ -71,6 +71,13 @@ function WorkerDetail() {
   const { data: w } = useSuspenseQuery({ queryKey: ["worker", workerId], queryFn: () => fetchWorker(workerId) });
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  const { data: phoneStatus } = useQuery({
+    queryKey: ["phone-verified", user?.id],
+    enabled: !!user,
+    queryFn: async () =>
+      (await supabase.from("profiles").select("phone_verified").eq("id", user!.id).maybeSingle()).data,
+  });
+  const phoneVerified = !!phoneStatus?.phone_verified;
   const CatIcon = getCategoryIcon(w.category?.icon);
   const name = w.profile?.full_name ?? "Pro";
   const initials = name.split(/\s+/).map((s: string) => s[0]).slice(0, 2).join("").toUpperCase();
@@ -241,6 +248,12 @@ function WorkerDetail() {
                     if (!isAuthenticated) {
                       e.preventDefault();
                       navigate({ to: "/auth" });
+                      return;
+                    }
+                    if (!phoneVerified) {
+                      e.preventDefault();
+                      toast.info("Verify your phone number to book a pro.");
+                      navigate({ to: "/verify-phone" });
                     }
                   }}
                 >
