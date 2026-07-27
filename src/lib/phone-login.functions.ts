@@ -88,6 +88,7 @@ export const verifyLoginOtp = createServerFn({ method: "POST" })
     }
 
     let userId = existing?.id ?? null;
+    let loginEmail = email;
 
     if (!userId) {
       const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
@@ -99,6 +100,9 @@ export const verifyLoginOtp = createServerFn({ method: "POST" })
         return { ok: false as const, error: "Could not create your account. Please try again." };
       }
       userId = created.user.id;
+    } else {
+      const { data: found } = await supabaseAdmin.auth.admin.getUserById(userId);
+      if (found?.user?.email) loginEmail = found.user.email;
     }
 
     const nowIso = new Date().toISOString();
@@ -115,7 +119,7 @@ export const verifyLoginOtp = createServerFn({ method: "POST" })
     // Mint a one-time token the browser can exchange for a session.
     const { data: link, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
       type: "magiclink",
-      email,
+      email: loginEmail,
     });
     const tokenHash = link?.properties?.hashed_token;
     if (linkErr || !tokenHash) {
